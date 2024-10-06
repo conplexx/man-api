@@ -1,20 +1,26 @@
-package web2.man.models;
+package web2.man.models.entities;
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import web2.man.enums.ClientOrderState;
+import web2.man.models.embeddables.Budget;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 
 @Entity
 @Data
-@Table(name = "order_step")
-public class OrderStep {
+@Table(name = "orderStep")
+public class OrderStep implements Serializable {
+    @Id
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "id", columnDefinition = "uuid")
+    private UUID id;
     @Column(nullable = false)
     private UUID orderId;
     @Column(nullable = false)

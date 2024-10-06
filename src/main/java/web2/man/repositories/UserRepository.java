@@ -2,7 +2,7 @@ package web2.man.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import web2.man.models.User;
+import web2.man.models.entities.User;
 
 import java.util.Optional;
 import java.util.UUID;

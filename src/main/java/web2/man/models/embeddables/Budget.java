@@ -1,11 +1,7 @@
-package web2.man.models;
+package web2.man.models.embeddables;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.GenericGenerator;
-
-import java.util.Date;
-import java.util.UUID;
 
 @Data
 @Embeddable

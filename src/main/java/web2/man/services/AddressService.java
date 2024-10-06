@@ -4,7 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import web2.man.models.Address;
+import web2.man.models.entities.Address;
 import web2.man.repositories.AddressRepository;
 
 import java.util.List;

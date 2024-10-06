@@ -4,7 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import web2.man.models.User;
+import web2.man.models.entities.User;
 import web2.man.repositories.UserRepository;
 
 import java.util.List;
