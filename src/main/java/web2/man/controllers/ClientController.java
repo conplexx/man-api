@@ -21,7 +21,7 @@ import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/client")
+@RequestMapping("/cliente")
 public class ClientController {
     @Autowired
     final UserService userService;
@@ -43,7 +43,7 @@ public class ClientController {
         }
     }
 
-    @PostMapping("/order")
+    @PostMapping("/pedido")
     public ResponseEntity<Object> createOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @RequestBody @Valid ClientOrderDto clientOrderDto) throws InterruptedException, ExecutionException {
         try {
             Order order = new Order();

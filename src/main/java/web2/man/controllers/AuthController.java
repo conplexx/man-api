@@ -4,16 +4,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import web2.man.configuration.CustomAuthenticationProvider;
 import web2.man.dtos.UserLoginDto;
 import web2.man.dtos.UserRegisterDto;
@@ -63,7 +61,7 @@ public class AuthController {
         }
         try {
             User user = storeNewUser(userRegisterDto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(user);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao criar usuário.");
         }
@@ -86,7 +84,8 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<Object> refresh(@RequestBody @Valid UserRefreshTokenDto userRefreshTokenDto) {
+    public ResponseEntity<Object> refresh(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
+                                          @RequestBody @Valid UserRefreshTokenDto userRefreshTokenDto) {
         var authToken = userRefreshTokenDto.getAuthToken();
         var refreshToken = userRefreshTokenDto.getRefreshToken();
         final UUID userId = UUID.fromString(jwtTokenUtil.extractSubject(authToken));

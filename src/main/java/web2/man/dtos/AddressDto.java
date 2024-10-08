@@ -10,16 +10,15 @@ public class AddressDto {
     @NotBlank
     private String zipCode;
     @NotBlank
-    private String street;
-    @NotBlank
-    private String number;
-    @NotBlank
-    private String complement;
-    @NotBlank
-    private String neighborhood;
+    @Length(min = 2, max = 2)
+    private String state;
     @NotBlank
     private String city;
     @NotBlank
-    @Length(min = 2, max = 2)
-    private String state;
+    private String neighborhood;
+    @NotBlank
+    private String street;
+    @NotBlank
+    private String number;
+    private String complement;
 }

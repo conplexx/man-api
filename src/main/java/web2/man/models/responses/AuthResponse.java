@@ -8,5 +8,5 @@ import web2.man.models.entities.User;
 @RequiredArgsConstructor
 public class AuthResponse {
     final TokenResponse accessToken;
-    final User user;
+    final UserResponse user;
 }

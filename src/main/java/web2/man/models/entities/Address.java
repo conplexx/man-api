@@ -22,15 +22,14 @@ public class Address implements Serializable {
     @NotBlank
     private String zipCode;
     @NotBlank
-    private String street;
-    @NotNull
-    private String number;
-    @NotBlank
-    private String neighborhood;
+    private String state;
     @NotBlank
     private String city;
     @NotBlank
-    private String state;
+    private String neighborhood;
     @NotBlank
-    private String country;
+    private String street;
+    @NotBlank
+    private String number;
+    private String complement;
 }
