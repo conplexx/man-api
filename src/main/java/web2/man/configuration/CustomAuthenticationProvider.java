@@ -24,26 +24,19 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     final BCryptPasswordEncoder passwordEncoder;
 
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(Authentication authentication) throws UsernameNotFoundException, BadCredentialsException {
         String requestLogin = authentication.getName();
         String requestPassword = authentication.getCredentials().toString();
-
-        Optional<User> optionalUser = userService.findByEmail(requestLogin);
-
-        if (optionalUser.isEmpty()) {
-            throw new UsernameNotFoundException("User not found");
+        var optionalUser = userService.findByEmail(requestLogin);
+        if(optionalUser.isEmpty()) {
+            throw new UsernameNotFoundException("Usuário não encontrado.");
         }
         User user = optionalUser.get();
-
-//        Optional<Password> optionalPassword = passwordService.findByUserId(user.getId());
-//        if (optionalPassword.isEmpty()) {
-//            throw new UsernameNotFoundException("Password not found");
-//        }
         String userPassword = user.getPassword();
         boolean isAuthenticated = passwordEncoder.matches(requestPassword, userPassword);
 
         if (!isAuthenticated) {
-            throw new BadCredentialsException("Invalid credentials");
+            throw new BadCredentialsException("Credenciais inválidas.");
         }
 
         return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());

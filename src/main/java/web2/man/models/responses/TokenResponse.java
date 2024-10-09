@@ -2,14 +2,14 @@ package web2.man.models.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class TokenResponse {
-    final String authToken;
-    final Date authExpiration;
-    final String refreshToken;
-    final Date refreshExpiration;
+    String authToken;
+    String refreshToken;
 }

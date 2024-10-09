@@ -4,14 +4,16 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class AddressResponse {
-    final String zipCode;
-    final String state;
-    final String city;
-    final String neighborhood;
-    final String street;
-    final String number;
+    String zipCode;
+    String state;
+    String city;
+    String neighborhood;
+    String street;
+    String number;
 }

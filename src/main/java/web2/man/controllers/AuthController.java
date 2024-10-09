@@ -10,18 +10,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import web2.man.configuration.CustomAuthenticationProvider;
 import web2.man.dtos.UserLoginDto;
 import web2.man.dtos.UserRegisterDto;
+import web2.man.enums.UserRole;
 import web2.man.models.data.UserRefreshTokenDto;
 import web2.man.models.entities.Address;
 import web2.man.models.entities.AuthToken;
 import web2.man.models.entities.RefreshToken;
 import web2.man.models.entities.User;
-import web2.man.models.responses.AuthResponse;
-import web2.man.models.responses.TokenResponse;
+import web2.man.models.responses.*;
 import web2.man.services.AddressService;
 import web2.man.services.AuthTokenService;
 import web2.man.services.RefreshTokenService;
@@ -30,20 +31,19 @@ import web2.man.util.JwtTokenUtil;
 
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/auth")
+@RequestMapping(value = "auth", consumes = "application/json", produces = "application/json")
 public class AuthController {
     @Autowired
     final UserService userService;
     @Autowired
     final AddressService addressService;
     @Autowired
-    final RefreshTokenService refreshTokenService;
-    @Autowired
     final AuthTokenService authTokenService;
+    @Autowired
+    final RefreshTokenService refreshTokenService;
     @Autowired
     final JwtTokenUtil jwtTokenUtil;
     @Autowired
@@ -51,24 +51,39 @@ public class AuthController {
     @Autowired
     final CustomAuthenticationProvider authenticationProvider;
 
-    @PostMapping("/autocadastro")
-    public ResponseEntity<Object> register(@RequestBody @Valid UserRegisterDto userRegisterDto) throws InterruptedException, ExecutionException {
+    @ControllerAdvice
+    public class GlobalExceptionHandler {
+        @ExceptionHandler({ Exception.class })
+        public ResponseEntity<BaseResponse> handleUsernameNotFoundException(Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new BaseResponse(ex.getMessage()));
+        }
+        @ExceptionHandler({ BadCredentialsException.class })
+        public ResponseEntity<BaseResponse> handleBadCredentialsExceptionException(BadCredentialsException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new BaseResponse(ex.getMessage()));
+        }
+        @ExceptionHandler({ UsernameNotFoundException.class })
+        public ResponseEntity<BaseResponse> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new BaseResponse(ex.getMessage()));
+        }
+    }
+    @PostMapping("/register")
+    public ResponseEntity<BaseResponse> register(@RequestBody @Valid UserRegisterDto userRegisterDto) throws RuntimeException {
         if (userService.existsByCpf(userRegisterDto.getCpf())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Usuário com esse CPF já existe.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(new BaseResponse("Usuário com esse CPF já existe."));
         }
         if(userService.existsByEmail(userRegisterDto.getEmail())){
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Usuário com esse email já existe.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(new BaseResponse("Usuário com esse email já existe."));
         }
         try {
             User user = storeNewUser(userRegisterDto);
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            UserResponse userResponse = generateResponseForUser(user);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse(userResponse));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao criar usuário.");
+            throw new RuntimeException("Erro ao registrar usuário.");
         }
     }
-
     @PostMapping("/login")
-    public ResponseEntity<Object> login(@RequestBody @Valid UserLoginDto userLoginDto) throws InterruptedException, ExecutionException {
+    public ResponseEntity<BaseResponse> login(@RequestBody @Valid UserLoginDto userLoginDto) throws BadCredentialsException {
         try {
             var credentials = new UsernamePasswordAuthenticationToken(userLoginDto.getEmail(),
                     userLoginDto.getPassword());
@@ -76,15 +91,17 @@ public class AuthController {
             User user = (User) auth.getPrincipal();
             authTokenService.deleteByUserId(user.getId());
             refreshTokenService.deleteByUserId(user.getId());
-            var authResponse = new AuthResponse(generateNewAccessTokenForUser(user.getId()), user);
-            return ResponseEntity.ok().body(authResponse);
+            var tokenResponse = generateNewAccessTokenForUser(user.getId());
+            var userResponse = generateResponseForUser(user);
+            var authResponse = new AuthResponse(tokenResponse, userResponse);
+            return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse(authResponse));
         } catch (BadCredentialsException ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login ou senha incorretos");
+            throw new BadCredentialsException("Credenciais inválidas.");
         }
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<Object> refresh(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
+    public ResponseEntity<BaseResponse> refresh(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
                                           @RequestBody @Valid UserRefreshTokenDto userRefreshTokenDto) {
         var authToken = userRefreshTokenDto.getAuthToken();
         var refreshToken = userRefreshTokenDto.getRefreshToken();
@@ -93,8 +110,8 @@ public class AuthController {
             authTokenService.deleteByUserId(userId);
             refreshTokenService.deleteByUserId(userId);
         }
-        var body = generateNewAccessTokenForUser(userId);
-        return ResponseEntity.status(HttpStatus.OK).body(body);
+        var accessToken = generateNewAccessTokenForUser(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse(accessToken));
     }
 
     private User storeNewUser(UserRegisterDto userRegisterDto) {
@@ -104,6 +121,8 @@ public class AuthController {
         BeanUtils.copyProperties(userRegisterDto.getAddress(), address);
         Address createdAddress = addressService.save(address);
         user.setAddressId(createdAddress.getId());
+        user.setPassword(generateNewUserPassword()); //TODO ENCODAR SENHA
+        user.setRole(UserRole.CLIENT);
         User createdUser = userService.save(user);
         return createdUser;
     }
@@ -121,11 +140,20 @@ public class AuthController {
         refresh.setExpirationDate(generatedRefresh.getExpiration());
         refresh.setUserId(userId);
         refreshTokenService.save(refresh).getToken();
-        return new TokenResponse(auth.getToken(), auth.getExpirationDate(), refresh.getToken(),
-                refresh.getExpirationDate());
+        return new TokenResponse(auth.getToken(), refresh.getToken());
     }
 
-    private void sendEmail() {
+    private UserResponse generateResponseForUser(User user) {
+        var userResponse = new UserResponse();
+        BeanUtils.copyProperties(user, userResponse);
+        Address address = addressService.findById(user.getAddressId()).get();
+        var addressResponse = new AddressResponse();
+        BeanUtils.copyProperties(address, addressResponse);
+        userResponse.setAddress(addressResponse);
+        return userResponse;
+    }
+
+    private String generateNewUserPassword() {
         Random random = new Random();
         StringBuilder sb = new StringBuilder();
 
@@ -133,8 +161,11 @@ public class AuthController {
             int digit = random.nextInt(10);
             sb.append(digit);
         }
-
-        String password = sb.toString();
-        //TODO SEND EMAIL
+        return sb.toString();
     }
+
+    private void sendUserPasswordEmail(String email, String password) {
+        //TODO MANDAR EMAIL COM SENHA GERADA
+    }
+
 }
