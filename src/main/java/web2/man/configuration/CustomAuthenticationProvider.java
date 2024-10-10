@@ -6,20 +6,21 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
-import web2.man.models.entities.User;
-import web2.man.services.UserService;
-
-import java.util.Optional;
+import web2.man.models.entities.Client;
+import web2.man.models.entities.Employee;
+import web2.man.services.ClientService;
+import web2.man.services.EmployeeService;
 
 @Component
 @RequiredArgsConstructor
 public class CustomAuthenticationProvider implements AuthenticationProvider {
     @Autowired
-    final UserService userService;
+    final ClientService clientService;
+    @Autowired
+    final EmployeeService employeeService;
     @Autowired
     final BCryptPasswordEncoder passwordEncoder;
 
@@ -27,12 +28,18 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws UsernameNotFoundException, BadCredentialsException {
         String requestLogin = authentication.getName();
         String requestPassword = authentication.getCredentials().toString();
-        var optionalUser = userService.findByEmail(requestLogin);
-        if(optionalUser.isEmpty()) {
-            throw new UsernameNotFoundException("Usuário não encontrado.");
-        }
-        User user = optionalUser.get();
-        String userPassword = user.getPassword();
+
+        var optionalClient = clientService.findByEmail(requestLogin);
+        var optionalEmployee = employeeService.findByEmail(requestLogin);
+        var user = optionalClient.isPresent() ? optionalClient.get() : optionalEmployee.get();
+
+        String userPassword = optionalClient
+                .map(Client::getPassword)
+                .orElseGet(() -> optionalEmployee
+                        .map(Employee::getPassword)
+                        .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."))
+                );
+
         boolean isAuthenticated = passwordEncoder.matches(requestPassword, userPassword);
 
         if (!isAuthenticated) {

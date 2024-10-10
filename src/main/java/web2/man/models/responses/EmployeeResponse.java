@@ -1,21 +1,18 @@
 package web2.man.models.responses;
 
-import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import web2.man.enums.UserRole;
 
-import java.util.UUID;
+import java.util.Date;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserResponse {
+public class EmployeeResponse {
     String cpf;
     String name;
     String email;
-    String phone;
-    UserRole role;
-    AddressResponse address;
+    Date birthday;
 }

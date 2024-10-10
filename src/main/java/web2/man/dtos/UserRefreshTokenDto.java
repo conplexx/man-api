@@ -1,4 +1,4 @@
-package web2.man.models.data;
+package web2.man.dtos;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

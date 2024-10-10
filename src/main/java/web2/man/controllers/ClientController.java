@@ -32,7 +32,7 @@ public class ClientController {
         }
     }
     @Autowired
-    final UserService userService;
+    final ClientService clientService;
     @Autowired
     final AddressService addressService;
     @Autowired

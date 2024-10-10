@@ -12,10 +12,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-@Entity
+@MappedSuperclass
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @Data
-@Table(name = "users")
-public class User implements Serializable {
+public abstract class User implements Serializable {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
@@ -29,13 +29,7 @@ public class User implements Serializable {
     @Column(nullable = false)
     private String email;
     @Column(nullable = false)
-    private String phone;
-    @Column(length = 4) //4 numeros
-    private String password;
-    @Column(nullable = false)
     private UserRole role;
-    @Column(nullable = false)
-    private UUID addressId;
 
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));

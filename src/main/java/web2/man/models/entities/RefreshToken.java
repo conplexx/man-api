@@ -3,6 +3,7 @@ package web2.man.models.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
+import web2.man.enums.UserRole;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -19,6 +20,8 @@ public class RefreshToken implements Serializable {
     private UUID id;
     @Column(nullable = false)
     private UUID userId;
+    @Column (nullable = false)
+    private UserRole userRole;
     @Column(nullable = false)
     private String token;
     @Column(nullable = false)

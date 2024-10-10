@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class UserRegisterDto {
+public class ClientRegisterDto {
     @NotBlank
     @Size(max = 11) //cpf pelado
     private String cpf;

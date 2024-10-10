@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
+import web2.man.enums.UserRole;
 import web2.man.models.data.TokenExpiration;
 
 import java.io.InputStream;
@@ -22,9 +23,9 @@ public class JwtTokenUtil {
     private static final Key PRIVATE_KEY = getKey();
     private static final long AUTH_EXPIRATION = 1800000;
 
-    public TokenExpiration generateToken(UUID userId) {
-        return generateToken(new HashMap<>(), userId);
-    }
+//    public TokenExpiration generateToken(UUID userId, UserRole userRole) {
+//        return generateToken(new HashMap<>(), userId, userRole);
+//    }
 
     public TokenExpiration generateToken(
             Map<String, Object> extraClaims,
@@ -71,6 +72,11 @@ public class JwtTokenUtil {
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
+    }
+
+    public <T> T extractClaim(String token, String claimName) {
+        final Claims claims = extractAllClaims(token);
+        return (T) claims.get(claimName);
     }
 
     private Date extractExpiration(String token) {

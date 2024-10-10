@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import web2.man.enums.UserRole;
 import web2.man.models.entities.RefreshToken;
 import web2.man.repositories.RefreshTokenRepository;
 
@@ -20,8 +21,8 @@ public class RefreshTokenService {
         return refreshTokenRepository.save(token);
     }
     @Transactional
-    public void deleteByUserId(UUID userId) {
-        refreshTokenRepository.deleteByUserId(userId);
+    public void deleteByUserIdAndUserRole(UUID userId, UserRole userRole) {
+        refreshTokenRepository.deleteByUserIdAndUserRole(userId, userRole);
     }
     public Optional<RefreshToken> findById(UUID id) {
         return refreshTokenRepository.findById(id);

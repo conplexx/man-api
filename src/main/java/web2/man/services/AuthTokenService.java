@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import web2.man.enums.UserRole;
 import web2.man.models.entities.AuthToken;
 import web2.man.repositories.AuthTokenRepository;
 
@@ -20,13 +21,16 @@ public class AuthTokenService {
         return authTokenRepository.save(token);
     }
     @Transactional
-    public void deleteByUserId(UUID userId) {
-        authTokenRepository.deleteByUserId(userId);
+    public void deleteByUserIdAndUserRole(UUID userId, UserRole userRole) {
+        authTokenRepository.deleteByUserIdAndUserRole(userId, userRole);
     }
     public Optional<AuthToken> findById(UUID id) {
         return authTokenRepository.findById(id);
     }
     public Optional<AuthToken> findByToken(String token) {
         return authTokenRepository.findByToken(token);
+    }
+    public boolean existsByToken(String token) {
+        return authTokenRepository.existsByToken(token);
     }
 }

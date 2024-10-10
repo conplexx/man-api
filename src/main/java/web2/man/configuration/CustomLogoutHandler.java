@@ -9,20 +9,22 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
-import web2.man.models.entities.User;
+import web2.man.enums.UserRole;
 import web2.man.services.AuthTokenService;
+import web2.man.services.ClientService;
+import web2.man.services.EmployeeService;
 import web2.man.services.RefreshTokenService;
-import web2.man.services.UserService;
 import web2.man.util.JwtTokenUtil;
 
-import java.util.Optional;
 import java.util.UUID;
 
 public class CustomLogoutHandler implements LogoutHandler {
     @Autowired
     JwtTokenUtil jwtTokenUtil;
     @Autowired
-    UserService userService;
+    ClientService clientService;
+    @Autowired
+    EmployeeService employeeService;
     @Autowired
     AuthTokenService authTokenService;
     @Autowired
@@ -36,23 +38,22 @@ public class CustomLogoutHandler implements LogoutHandler {
         }
         final String token = authHeader.substring(7);
         final UUID userId = UUID.fromString(jwtTokenUtil.extractSubject(token));
+        final UserRole userRole = (UserRole) jwtTokenUtil.extractClaim(token, "role");
 
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            boolean isTokenValid = false;
-            Optional<User> userRequest = this.userService.findById(userId);
-            if(userRequest.isPresent()){
-                var userToken = authTokenService.findByToken(token);
-                if(userToken.isPresent()) {
-                    isTokenValid = jwtTokenUtil.isTokenValid(userToken.get().getToken(), userId);
-                }
-                if(isTokenValid) {
-                    authTokenService.deleteByUserId(userId);
-                    refreshTokenService.deleteByUserId(userId);
+        try{
+            if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                boolean isTokenValid = authTokenService.existsByToken(token);
+                boolean hasUser = clientService.existsById(userId) || employeeService.existsById(userId);
+                if(hasUser && isTokenValid){
+                    authTokenService.deleteByUserIdAndUserRole(userId, userRole);
+                    refreshTokenService.deleteByUserIdAndUserRole(userId, userRole);
                     SecurityContextHolder.clearContext();
                     response.setStatus(HttpStatus.OK.value());
                     return;
                 }
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
             }
+        } catch (Exception e) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
         }
     }
