@@ -7,19 +7,19 @@ import web2.man.models.entities.Employee;
 @Data
 public class UserAuthResponse {
     TokenResponse accessToken;
-    UserRole role;
+    UserRole userRole;
     ClientResponse client;
     Employee employee;
 
     public UserAuthResponse(TokenResponse accessToken, ClientResponse client) {
         this.accessToken = accessToken;
-        this.role = UserRole.CLIENT;
+        this.userRole = UserRole.CLIENT;
         this.client = client;
     }
 
     public UserAuthResponse(TokenResponse accessToken, Employee employee) {
         this.accessToken = accessToken;
-        this.role = UserRole.EMPLOYEE;
+        this.userRole = UserRole.EMPLOYEE;
         this.employee = employee;
     }
 }

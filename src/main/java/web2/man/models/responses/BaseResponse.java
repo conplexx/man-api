@@ -1,11 +1,12 @@
 package web2.man.models.responses;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor //resposta sem dados e sem erro
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BaseResponse {
     String errorMessage;
     Object data;
@@ -16,6 +17,6 @@ public class BaseResponse {
     }
     //resposta de dados
     public BaseResponse(Object data) {
-        this.data = data;
+        this.setData(data);
     }
 }

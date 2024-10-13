@@ -18,6 +18,7 @@ import web2.man.dtos.UserLoginDto;
 import web2.man.dtos.ClientRegisterDto;
 import web2.man.dtos.UserRefreshTokenDto;
 import web2.man.enums.UserRole;
+import web2.man.models.data.TokenExpiration;
 import web2.man.models.entities.*;
 import web2.man.models.responses.*;
 import web2.man.services.*;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "auth", consumes = "application/json", produces = "application/json")
@@ -51,7 +53,7 @@ public class AuthController {
     @ControllerAdvice
     public class GlobalExceptionHandler {
         @ExceptionHandler({ Exception.class })
-        public ResponseEntity<BaseResponse> handleUsernameNotFoundException(Exception ex) {
+        public ResponseEntity<BaseResponse> handleGenericException(Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new BaseResponse(ex.getMessage()));
         }
         @ExceptionHandler({ BadCredentialsException.class })
@@ -73,8 +75,8 @@ public class AuthController {
         }
         try {
             Client client = storeNewClient(registerDto);
-            ClientResponse userResponse = generateResponseForClient(client);
-            return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse(userResponse));
+            ClientResponse clientResponse = generateResponseForClient(client);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse(clientResponse));
         } catch (Exception e) {
             throw new RuntimeException("Erro ao registrar usuário.");
         }
@@ -104,8 +106,6 @@ public class AuthController {
                 var authResponse = new UserAuthResponse(tokenResponse, employee);
                 return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse(authResponse));
             }
-
-
         } catch (BadCredentialsException ex) {
             throw new BadCredentialsException("Credenciais inválidas.");
         }
@@ -115,9 +115,9 @@ public class AuthController {
                                           @RequestBody @Valid UserRefreshTokenDto userRefreshTokenDto) {
         var authToken = userRefreshTokenDto.getAuthToken();
         final UUID userId = UUID.fromString(jwtTokenUtil.extractSubject(authToken));
-        UserRole role = (UserRole) jwtTokenUtil.extractClaim(authToken, "role");
+        UserRole role = jwtTokenUtil.extractClaim(authToken, "role");
         if (!jwtTokenUtil.isTokenValid(authToken, userId)) {
-            authTokenService.deleteByUserIdAndUserRole(userId, role);;
+            authTokenService.deleteByUserIdAndUserRole(userId, role);
             refreshTokenService.deleteByUserIdAndUserRole(userId, role);
         }
         var accessToken = generateNewAccessTokenForUser(userId, role);
@@ -139,20 +139,20 @@ public class AuthController {
     private TokenResponse generateNewAccessTokenForUser(UUID userId, UserRole role) {
         var auth = new AuthToken();
         Map<String, Object> claims = Map.of("role", role);
-        var generatedAuth = jwtTokenUtil.generateToken(claims, userId);
+        TokenExpiration generatedAuth = jwtTokenUtil.generateToken(claims, userId);
         auth.setToken(generatedAuth.getToken());
         auth.setExpirationDate(generatedAuth.getExpiration());
         auth.setUserId(userId);
         auth.setUserRole(role);
-        authTokenService.save(auth).getToken();
+        String newAuth = authTokenService.save(auth).getToken();
         var refresh = new RefreshToken();
-        var generatedRefresh = jwtTokenUtil.generateRefreshToken();
+        TokenExpiration generatedRefresh = jwtTokenUtil.generateRefreshToken();
         refresh.setToken(generatedRefresh.getToken());
         refresh.setExpirationDate(generatedRefresh.getExpiration());
         refresh.setUserId(userId);
-        auth.setUserRole(role);
-        refreshTokenService.save(refresh).getToken();
-        return new TokenResponse(auth.getToken(), refresh.getToken());
+        refresh.setUserRole(role);
+        var newRefresh = refreshTokenService.save(refresh).getToken();
+        return new TokenResponse(newAuth, newRefresh);
     }
 
     private ClientResponse generateResponseForClient(Client client) {

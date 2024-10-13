@@ -12,6 +12,6 @@ import java.util.Date;
 public class Employee extends User {
     @Column(nullable = false)
     private Date birthday;
-    @Column(nullable = false)
+    @Column(nullable = false, length = 4) //4 numeros
     private String password;
 }

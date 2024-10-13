@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "cliente", consumes = "application/json", produces = "application/json")
@@ -65,7 +66,7 @@ public class ClientController {
         }
     }
 
-    @PostMapping("/solicitar-manutencao")
+    @PostMapping("/manutencao")
     public ResponseEntity<BaseResponse> createOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @RequestBody @Valid ClientOrderDto clientOrderDto) throws InterruptedException, ExecutionException {
         try {
             Order order = new Order();
