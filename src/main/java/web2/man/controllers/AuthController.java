@@ -19,12 +19,15 @@ import web2.man.dtos.ClientRegisterDto;
 import web2.man.dtos.UserRefreshTokenDto;
 import web2.man.enums.UserRole;
 import web2.man.models.data.TokenExpiration;
+import web2.man.models.data.UserDescription;
 import web2.man.models.entities.*;
 import web2.man.models.responses.*;
 import web2.man.services.*;
 import web2.man.util.JwtTokenUtil;
+import web2.man.util.ResponseUtil;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 
@@ -45,6 +48,8 @@ public class AuthController {
     final RefreshTokenService refreshTokenService;
     @Autowired
     final JwtTokenUtil jwtTokenUtil;
+    @Autowired
+    final ResponseUtil responseUtil;
     @Autowired
     final BCryptPasswordEncoder passwordEncoder;
     @Autowired
@@ -67,15 +72,15 @@ public class AuthController {
     }
     @PostMapping("/client-register")
     public ResponseEntity<BaseResponse> register(@RequestBody @Valid ClientRegisterDto registerDto) throws RuntimeException {
-        if (clientService.existsByCpf(registerDto.getCpf())) {
+        if (clientService.existsByCpf(registerDto.getCpf()) || employeeService.existsByCpf(registerDto.getCpf())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new BaseResponse("Usuário com esse CPF já existe."));
         }
-        if(clientService.existsByEmail(registerDto.getEmail())){
+        if(clientService.existsByEmail(registerDto.getEmail()) || employeeService.existsByEmail(registerDto.getEmail())){
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new BaseResponse("Usuário com esse email já existe."));
         }
         try {
             Client client = storeNewClient(registerDto);
-            ClientResponse clientResponse = generateResponseForClient(client);
+            ClientResponse clientResponse = responseUtil.generateClientResponse(client);
             return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse(clientResponse));
         } catch (Exception e) {
             throw new RuntimeException("Erro ao registrar usuário.");
@@ -87,19 +92,20 @@ public class AuthController {
             var credentials = new UsernamePasswordAuthenticationToken(userLoginDto.getEmail(),
                     userLoginDto.getPassword());
             Authentication auth = authenticationProvider.authenticate(credentials);
-
+            var userDescription = (UserDescription) auth.getPrincipal();
             TokenResponse tokenResponse;
-            if(auth.getAuthorities().contains(UserRole.CLIENT)) {
-                Client client = (Client) auth.getPrincipal();
+
+            if(userDescription.getUserRole() == UserRole.CLIENT) {
+                Client client = clientService.findById(userDescription.getUserId()).get();
                 authTokenService.deleteByUserIdAndUserRole(client.getId(), UserRole.CLIENT);
                 refreshTokenService.deleteByUserIdAndUserRole(client.getId(), UserRole.CLIENT);
                 tokenResponse = generateNewAccessTokenForUser(client.getId(), UserRole.CLIENT);
-                var clientResponse = generateResponseForClient(client);
+                ClientResponse clientResponse = responseUtil.generateClientResponse(client);
                 var authResponse = new UserAuthResponse(tokenResponse, clientResponse);
                 return ResponseEntity.status(HttpStatus.OK).body(new BaseResponse(authResponse));
             }
             else {
-                Employee employee = (Employee) auth.getPrincipal();
+                Employee employee = employeeService.findById(userDescription.getUserId()).get();
                 authTokenService.deleteByUserIdAndUserRole(employee.getId(), UserRole.EMPLOYEE);
                 refreshTokenService.deleteByUserIdAndUserRole(employee.getId(), UserRole.EMPLOYEE);
                 tokenResponse = generateNewAccessTokenForUser(employee.getId(), UserRole.EMPLOYEE);
@@ -153,16 +159,6 @@ public class AuthController {
         refresh.setUserRole(role);
         var newRefresh = refreshTokenService.save(refresh).getToken();
         return new TokenResponse(newAuth, newRefresh);
-    }
-
-    private ClientResponse generateResponseForClient(Client client) {
-        var clientResponse = new ClientResponse();
-        BeanUtils.copyProperties(client, clientResponse);
-        Address address = addressService.findById(client.getAddressId()).get();
-        var addressResponse = new AddressResponse();
-        BeanUtils.copyProperties(address, addressResponse);
-        clientResponse.setAddress(addressResponse);
-        return clientResponse;
     }
 
     private String generateNewUserPassword() {

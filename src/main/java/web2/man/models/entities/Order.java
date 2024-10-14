@@ -29,6 +29,8 @@ public class Order implements Serializable {
     private UUID equipmentCategoryId;
     @Column(nullable = false, length = 30)
     private String equipmentDescription;
+    @Column(nullable = false, length = 30)
+    private String failureDescription;
     @Column(nullable = false)
     private ClientOrderState state;
     @ElementCollection(targetClass = OrderStep.class, fetch = FetchType.EAGER)

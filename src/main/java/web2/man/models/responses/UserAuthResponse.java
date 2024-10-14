@@ -1,10 +1,12 @@
 package web2.man.models.responses;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import web2.man.enums.UserRole;
 import web2.man.models.entities.Employee;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserAuthResponse {
     TokenResponse accessToken;
     UserRole userRole;

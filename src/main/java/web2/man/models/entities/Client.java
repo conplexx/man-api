@@ -2,6 +2,7 @@ package web2.man.models.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import web2.man.enums.UserRole;
 
 import java.util.UUID;
 
@@ -15,4 +16,8 @@ public class Client extends User {
     private UUID addressId;
     @Column(nullable = false, length = 4) //4 numeros
     private String password;
+
+    public Client() {
+        this.setRole(UserRole.CLIENT);
+    }
 }

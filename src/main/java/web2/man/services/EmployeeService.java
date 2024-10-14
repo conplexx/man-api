@@ -35,6 +35,12 @@ public class EmployeeService {
     public Optional<Employee> findByEmail(String email) {
         return employeeRepository.findByEmail(email);
     }
+    public boolean existsByEmail(String email) {
+        return employeeRepository.existsByEmail(email);
+    }
+    public boolean existsByCpf(String cpf) {
+        return employeeRepository.existsByCpf(cpf);
+    }
     public boolean existsById(UUID id) {
         return employeeRepository.existsById(id);
     }

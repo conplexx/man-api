@@ -9,12 +9,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import web2.man.dtos.ClientOrderDto;
+import web2.man.dtos.ClientRegisterDto;
+import web2.man.models.entities.Address;
+import web2.man.models.entities.Client;
 import web2.man.models.entities.Order;
 import web2.man.models.entities.OrderStep;
 import web2.man.models.responses.BaseResponse;
+import web2.man.models.responses.ClientResponse;
 import web2.man.models.responses.OrderResponse;
 import web2.man.services.*;
 import web2.man.util.HeaderUtil;
+import web2.man.util.ResponseUtil;
 
 import java.util.List;
 import java.util.UUID;
@@ -44,9 +49,30 @@ public class ClientController {
     final EquipmentCategoryService equipmentCategoryService;
     @Autowired
     final HeaderUtil headerUtil;
+    @Autowired
+    final ResponseUtil responseUtil;
+
+    @PostMapping
+    public ResponseEntity<BaseResponse> postUser(@RequestBody @Valid ClientRegisterDto clientDto) { //TODO tirar
+        try {
+            Client client = new Client();
+            Address address = new Address();
+            BeanUtils.copyProperties(clientDto, client);
+            BeanUtils.copyProperties(clientDto.getAddress(), address);
+            Address createdAddress = addressService.save(address);
+            client.setAddressId(createdAddress.getId());
+            client.setPassword("1234");
+            Client createdClient = clientService.save(client);
+            ClientResponse clientResponse = responseUtil.generateClientResponse(createdClient);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse(clientResponse));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new BaseResponse("mas se é burro hein fi"));
+        }
+    }
 
     @GetMapping("/home")
-    public ResponseEntity<BaseResponse> getHome(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) throws InterruptedException, ExecutionException {
+    public ResponseEntity<BaseResponse> getHome(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader)
+            throws InterruptedException, ExecutionException {
         try {
             UUID clientId = headerUtil.getUserIdFromAuthHeader(authHeader).get();
             List<Order> orders = orderService.findAllByClientId(clientId);
@@ -67,7 +93,10 @@ public class ClientController {
     }
 
     @PostMapping("/manutencao")
-    public ResponseEntity<BaseResponse> createOrder(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @RequestBody @Valid ClientOrderDto clientOrderDto) throws InterruptedException, ExecutionException {
+    public ResponseEntity<BaseResponse> createOrder(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
+            @RequestBody @Valid ClientOrderDto clientOrderDto
+    ) throws InterruptedException, ExecutionException {
         try {
             Order order = new Order();
             BeanUtils.copyProperties(clientOrderDto, order);
@@ -81,7 +110,10 @@ public class ClientController {
     }
 
     @PostMapping("/pedido")
-    public ResponseEntity<BaseResponse> getBudget(@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader, @RequestBody @Valid UUID orderId) throws InterruptedException, ExecutionException {
+    public ResponseEntity<BaseResponse> getBudget(
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
+            @RequestBody @Valid UUID orderId
+    ) throws InterruptedException, ExecutionException {
         try {
             Order order = orderService.findById(orderId).get();
             UUID userId = headerUtil.getUserIdFromAuthHeader(authHeader).get();
