@@ -3,7 +3,7 @@ package web2.man.models.responses;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import web2.man.enums.ClientOrderState;
+import web2.man.enums.OrderState;
 import web2.man.models.entities.EquipmentCategory;
 import web2.man.models.entities.OrderStep;
 
@@ -20,6 +20,6 @@ public class EmployeeOrderResponse {
     Date date;
     EquipmentCategory equipmentCategory;
     String equipmentDescription;
-    ClientOrderState state;
+    OrderState state;
     List<OrderStep> steps;
 }

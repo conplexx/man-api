@@ -1,6 +1,6 @@
 package web2.man.enums;
 
-public enum ClientOrderState {
+public enum OrderState {
     OPEN("OPEN"),
     BUDGETED("BUDGETED"),
     REJECTED("REJECTED"),
@@ -13,7 +13,7 @@ public enum ClientOrderState {
 
     private String value;
 
-    ClientOrderState(String value) {
+    OrderState(String value) {
         this.value = value;
     }
 }

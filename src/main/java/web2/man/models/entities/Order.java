@@ -3,7 +3,7 @@ package web2.man.models.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
-import web2.man.enums.ClientOrderState;
+import web2.man.enums.OrderState;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -32,7 +32,7 @@ public class Order implements Serializable {
     @Column(nullable = false, length = 30)
     private String failureDescription;
     @Column(nullable = false)
-    private ClientOrderState state;
+    private OrderState state;
     @ElementCollection(targetClass = OrderStep.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "orderStep", joinColumns = @JoinColumn(name = "clientOrderId"))
     @Column(name = "orderStep")

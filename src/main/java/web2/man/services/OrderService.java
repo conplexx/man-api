@@ -4,7 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import web2.man.enums.ClientOrderState;
+import web2.man.enums.OrderState;
 import web2.man.models.entities.Order;
 import web2.man.repositories.OrderRepository;
 
@@ -30,9 +30,9 @@ public class OrderService {
         return orderRepository.findAll();
     }
     public List<Order> findAllWithOpenState() {
-        return orderRepository.findAllByState(ClientOrderState.OPEN);
+        return orderRepository.findAllByState(OrderState.OPEN);
     }
-    public List<Order> findAllByState(ClientOrderState state) {
+    public List<Order> findAllByState(OrderState state) {
         return orderRepository.findAllByState(state);
     }
     public List<Order> findAllByClientId(UUID id) {

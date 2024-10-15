@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import web2.man.dtos.ClientOrderDto;
 import web2.man.dtos.ClientRegisterDto;
+import web2.man.enums.OrderState;
 import web2.man.models.entities.Address;
 import web2.man.models.entities.Client;
 import web2.man.models.entities.Order;
@@ -21,6 +22,7 @@ import web2.man.services.*;
 import web2.man.util.HeaderUtil;
 import web2.man.util.ResponseUtil;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -102,6 +104,8 @@ public class ClientController {
             BeanUtils.copyProperties(clientOrderDto, order);
             UUID userId = headerUtil.getUserIdFromAuthHeader(authHeader).get();
             order.setClientId(userId);
+            order.setState(OrderState.OPEN);
+            order.setDate(new Date());
             Order newOrder = orderService.save(order);
             return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponse(newOrder));
         } catch (Exception e) {

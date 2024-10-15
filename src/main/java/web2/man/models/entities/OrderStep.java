@@ -4,8 +4,7 @@ package web2.man.models.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
-import web2.man.enums.ClientOrderState;
+import web2.man.enums.OrderState;
 import web2.man.models.embeddables.Budget;
 
 import java.io.Serializable;
@@ -24,7 +23,7 @@ public class OrderStep implements Serializable {
     @Column(nullable = false)
     private UUID orderId;
     @Column(nullable = false)
-    private ClientOrderState state;
+    private OrderState state;
     @Column(nullable = false)
     private Date date;
     @Column(nullable = false)

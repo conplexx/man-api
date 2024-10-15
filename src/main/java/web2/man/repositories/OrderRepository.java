@@ -2,7 +2,7 @@ package web2.man.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import web2.man.enums.ClientOrderState;
+import web2.man.enums.OrderState;
 import web2.man.models.entities.Order;
 
 import java.util.List;
@@ -15,7 +15,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     boolean existsById(UUID id);
     Optional<Order> findById(UUID id);
     List<Order> findAll();
-    List<Order> findAllByState(ClientOrderState state);
+    List<Order> findAllByState(OrderState state);
     List<Order> findAllByClientId(UUID id);
     void deleteById(UUID id);
 }
