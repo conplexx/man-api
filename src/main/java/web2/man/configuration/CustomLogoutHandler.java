@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import web2.man.enums.UserRole;
 import web2.man.services.AuthTokenService;
 import web2.man.services.ClientService;
@@ -29,6 +30,7 @@ public class CustomLogoutHandler implements LogoutHandler {
     AuthTokenService authTokenService;
     @Autowired
     RefreshTokenService refreshTokenService;
+    @CrossOrigin(origins = "http://localhost:4200")
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws AuthenticationException {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);

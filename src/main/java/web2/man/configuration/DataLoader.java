@@ -3,14 +3,12 @@ package web2.man.configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-import web2.man.models.entities.Address;
-import web2.man.models.entities.Employee;
-import web2.man.models.entities.EquipmentCategory;
-import web2.man.services.AddressService;
-import web2.man.services.ClientService;
-import web2.man.services.EmployeeService;
-import web2.man.services.EquipmentCategoryService;
+import web2.man.enums.OrderState;
+import web2.man.enums.UserRole;
+import web2.man.models.entities.*;
+import web2.man.services.*;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
@@ -20,6 +18,7 @@ public class DataLoader implements CommandLineRunner {
     @Autowired private AddressService addressService;
     @Autowired private EmployeeService employeeService;
     @Autowired private ClientService clientService;
+    @Autowired private OrderService orderService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -50,7 +49,6 @@ public class DataLoader implements CommandLineRunner {
             ad1.setNeighborhood("Vila Izabel");
             ad1.setStreet("Rua do Caos");
             ad1.setNumber("24");
-            UUID addressId = addressService.save(ad1).getId();
         }
 
         //2 funcionários (Maria e Mário)
@@ -72,9 +70,34 @@ public class DataLoader implements CommandLineRunner {
             employeeService.save(mario);
         }
 
-        //4 clientes (João, José, Joana, Joaquina)
-        if(employeeService.findAll().size() == 0){
+        //4 clientes (João, Josué, Joana, Joaquina)
+        if(clientService.findByEmail("josue@cliente.com").isEmpty()){
+            var optAd = addressService.findAll().stream().findFirst();
+            if(optAd.isPresent()) {
+                var addressId = optAd.get().getId();
+                var jozueh = new Client();
+                jozueh.setPassword("1234");
+                jozueh.setEmail("josue@cliente.com");
+                jozueh.setName("Josué");
+                jozueh.setRole(UserRole.CLIENT);
+                jozueh.setCpf("00000000000");
+                jozueh.setPhone("00000000000");
+                jozueh.setAddressId(addressId);
+                clientService.save(jozueh);
+            }
+        }
 
+        if(clientService.findByEmail("josue@cliente.com").isPresent()){
+            Client josu = clientService.findByEmail("josue@cliente.com").get();
+            var or = new Order();
+            or.setDate(new Date());
+            or.setSteps(new ArrayList<OrderStep>());
+            or.setClientId(josu.getId());
+            or.setEquipmentDescription("pc da xuxa");
+            or.setFailureDescription("foi atropelado");
+            or.setState(OrderState.OPEN);
+            or.setEquipmentCategoryId(equipmentCategoryService.findAll().stream().findFirst().get().getId()); //kkkkkkkkkk
+            orderService.save(or);
         }
     }
 }
