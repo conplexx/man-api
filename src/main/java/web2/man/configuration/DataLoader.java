@@ -62,6 +62,14 @@ public class DataLoader implements CommandLineRunner {
             maria.setPassword("1234");
             maria.setBirthday(new Date());
             employeeService.save(maria);
+
+            Employee mario = new Employee();
+            maria.setName("Mário");
+            maria.setCpf("59201895097");
+            maria.setEmail("mario@funcionario.com");
+            maria.setPassword("1234");
+            maria.setBirthday(new Date());
+            employeeService.save(mario);
         }
 
         //4 clientes (João, José, Joana, Joaquina)

@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 import web2.man.enums.UserRole;
 
-import java.io.Serializable;
 import java.util.Date;
 
 @Entity
