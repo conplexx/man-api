@@ -40,7 +40,7 @@ public class ResponseUtil {
     public EmployeeOrderResponse generateEmployeeOrderResponse(Order order) {
         var orderResponse = new EmployeeOrderResponse();
         BeanUtils.copyProperties(order, orderResponse);
-        EquipmentCategory equipmentCategory = equipmentCategoryService.findById(order.getEquipmentCategoryId()).get();
+        EquipmentCategory equipmentCategory = order.getEquipmentCategory();
         orderResponse.setEquipmentCategory(equipmentCategory);
         Client client = clientService.findById(order.getClientId()).get();
         ClientResponse clientResponse = this.generateClientResponse(client);

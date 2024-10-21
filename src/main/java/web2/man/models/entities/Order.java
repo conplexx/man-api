@@ -1,11 +1,13 @@
 package web2.man.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 import web2.man.enums.OrderState;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -25,17 +27,17 @@ public class Order implements Serializable {
 
     @Column(nullable = false)
     private Date date;
-    @Column(nullable = false)
-    private UUID equipmentCategoryId;
+    @ManyToOne
+    @JoinColumn(name = "equipmentCategoryId", referencedColumnName = "id", nullable = false)
+    private EquipmentCategory equipmentCategory;
     @Column(nullable = false, length = 30)
     private String equipmentDescription;
     @Column(nullable = false, length = 30)
     private String failureDescription;
     @Column(nullable = false)
     private OrderState state;
-    @ElementCollection(targetClass = OrderStep.class, fetch = FetchType.EAGER)
-    @CollectionTable(name = "orderStep", joinColumns = @JoinColumn(name = "clientOrderId"))
-    @Column(name = "orderStep")
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<OrderStep> steps;
 
 }

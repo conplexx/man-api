@@ -8,7 +8,7 @@ public enum OrderState {
     REDIRECTED("REDIRECTED"),
     FIXED("FIXED"),
     PAYED("PAYED"),
-    ENDED("ENDED");
+    FINALIZED("FINALIZED");
 
 
     private String value;

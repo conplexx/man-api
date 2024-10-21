@@ -49,6 +49,7 @@ public class DataLoader implements CommandLineRunner {
             ad1.setNeighborhood("Vila Izabel");
             ad1.setStreet("Rua do Caos");
             ad1.setNumber("24");
+            addressService.save(ad1);
         }
 
         //2 funcionários (Maria e Mário)
@@ -87,17 +88,18 @@ public class DataLoader implements CommandLineRunner {
             }
         }
 
-        if(clientService.findByEmail("josue@cliente.com").isPresent()){
-            Client josu = clientService.findByEmail("josue@cliente.com").get();
-            var or = new Order();
-            or.setDate(new Date());
-            or.setSteps(new ArrayList<OrderStep>());
-            or.setClientId(josu.getId());
-            or.setEquipmentDescription("pc da xuxa");
-            or.setFailureDescription("foi atropelado");
-            or.setState(OrderState.OPEN);
-            or.setEquipmentCategoryId(equipmentCategoryService.findAll().stream().findFirst().get().getId()); //kkkkkkkkkk
-            orderService.save(or);
-        }
+//        if(clientService.findByEmail("josue@cliente.com").isPresent()){
+//            Client josu = clientService.findByEmail("josue@cliente.com").get();
+//            var or = new Order();
+//            or.setDate(new Date());
+//            or.setSteps(new ArrayList<OrderStep>());
+//            or.setClientId(josu.getId());
+//            or.setEquipmentDescription("pc da xuxa");
+//            or.setFailureDescription("foi atropelado");
+//            or.setState(OrderState.OPEN);
+//            EquipmentCategory ec = equipmentCategoryService.findAll().stream().findFirst().get();
+//            or.setEquipmentCategory(ec);
+//            orderService.save(or);
+//        }
     }
 }

@@ -20,6 +20,7 @@ public class EmployeeOrderResponse {
     Date date;
     EquipmentCategory equipmentCategory;
     String equipmentDescription;
+    String failureDescription;
     OrderState state;
     List<OrderStep> steps;
 }

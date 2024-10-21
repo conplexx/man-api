@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @Embeddable
 public class Budget {
-    @Column(nullable = false)
+    @Column
     private double value;
     @Column(length = 30)
     private String description;

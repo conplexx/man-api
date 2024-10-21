@@ -9,7 +9,5 @@ import java.util.UUID;
 public class EmployeeBudgetDto {
     @NotNull
     private double value;
-    @NotNull
-    private UUID employeeId;
     private String description;
 }

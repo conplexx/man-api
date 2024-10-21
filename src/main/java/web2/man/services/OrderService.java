@@ -6,11 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import web2.man.enums.OrderState;
 import web2.man.models.entities.Order;
+import web2.man.models.entities.OrderStep;
 import web2.man.repositories.OrderRepository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -44,5 +43,57 @@ public class OrderService {
     public boolean existsById(UUID id) {
         return orderRepository.existsById(id);
     }
+    public List<Order> findAllOrdersWithEmployeeId(UUID id) { return orderRepository.findAllOrdersWithEmployeeId(id); }
+    public boolean isEmployeeResponsibleForOrder(UUID orderId, UUID employeeId) {
+        Optional<Order> orderOptional = orderRepository.findById(orderId);
+        if (orderOptional.isPresent()) {
+            Order order = orderOptional.get();
+            List<OrderStep> steps = order.getSteps();
+            if (!steps.isEmpty()) {
+                OrderStep lastStep = steps.get(steps.size() - 1);
+                return lastStep.getEmployeeId().equals(employeeId);
+            }
+        }
+        return false;
+    }
+    public List<Order> findEmployeeOrdersWithinLast24Hours(UUID employeeId) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.HOUR_OF_DAY, -24);
+        Date last24Hours = calendar.getTime();
+        return orderRepository.findEmployeeOrdersAfterDate(employeeId, last24Hours);
+    }
+
+    public List<Order> findEmployeeOrdersInDateRange(UUID employeeId, Date startDate, Date endDate) {
+        return orderRepository.findEmployeeOrdersInDateRange(employeeId, startDate, endDate);
+    }
+
+
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
